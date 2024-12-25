@@ -1,0 +1,102 @@
+mixed-port: 1080
+allow-lan: true
+find-process-mode: strict
+mode: rule
+log-level: info
+ipv6: false
+external-controller: 0.0.0.0:9090
+dns:
+  enable: true
+  # listen: 0.0.0.0:53
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-filter:
+  - '*'
+  - +.lan
+  - +.local
+  - +.stun.*.*
+  - +.stun.*.*.*
+  - +.stun.*.*.*.*
+  - +.stun.*.*.*.*.*
+  - '*.n.n.srv.nintendo.net'
+  - +.stun.playstation.net
+  - xbox.*.*.microsoft.com
+  - '*.*.xboxlive.com'
+  # - rule-set:fakeip-filter
+  nameserver:
+  - 8.8.8.8
+  - 1.1.1.1
+  - https://8.8.8.8/dns-query
+  - https://1.1.1.1/dns-query
+  nameserver-policy:
+    geosite:cn,private:
+    - 119.29.29.29
+    - 223.5.5.51
+    # '+.lan': '192.168.199.1'
+
+proxies: []
+
+proxy-groups:
+  - name: 🚀 节点选择
+    type: select
+    use:
+      - yfjc
+  - name: 🎯 全球直连
+    type: select
+    proxies:
+      - DIRECT
+      - 🚀 节点选择
+  - name: 🇺🇲 美国节点
+    type: select
+    use:
+      - yfjc
+    filter: "美国|美"
+  - name: 🛑 全球拦截
+    type: select
+    proxies:
+      - REJECT
+      - DIRECT
+  - name: 🐟 漏网之鱼
+    type: select
+    proxies:
+      - 🚀 节点选择
+      - DIRECT
+    use:
+      - yfjc
+
+
+proxy-providers:
+  yfjc:
+    type: http
+    url: ''
+    interval: 57600
+    proxy: DIRECT
+    path: ./provider1.yaml
+    header:
+      User-Agent:
+      - "Clash/v1.18.0"
+      - "mihomo/1.18.3"
+    exclude-filter: "剩余流量|套餐到期|距离下次重置剩余"
+
+rule-providers:
+  fakeip-filter:
+    type: http
+    path: ./ruleset/fakeip-filter.list
+    url: https://raw.githubusercontent.com/juewuy/ShellCrash/refs/heads/dev/public/fake_ip_filter.list
+    interval: 2592000
+    proxy: DIRECT  # or other proxy
+    behavior: domain
+    format: text
+
+rules:
+  - GEOIP,lan,DIRECT
+  - GEOIP,telegram,🚀 节点选择,no-resolve
+  - GEOSITE,telegram,🚀 节点选择
+  - GEOSITE,google,🚀 节点选择
+  - GEOSITE,CN,🎯 全球直连
+  - GEOIP,CN,DIRECT,no-resolve
+  - GEOSITE,spotify,🇺🇲 美国节点
+  - PROCESS-NAME,Spotify.exe,🇺🇲 美国节点
+  - PROCESS-NAME,Spotify,🇺🇲 美国节点
+  - PROCESS-NAME,Spotify Helper,🇺🇲 美国节点
+  - MATCH,🐟 漏网之鱼
