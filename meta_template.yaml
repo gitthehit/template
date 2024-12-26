@@ -89,7 +89,7 @@ rule-providers:
     format: text
 
 rules:
-  - GEOIP,lan,DIRECT
+  - GEOIP,lan,DIRECT,no-resolve
   - GEOIP,telegram,🚀 节点选择,no-resolve
   - GEOSITE,telegram,🚀 节点选择
   - GEOSITE,google,🚀 节点选择
